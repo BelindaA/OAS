@@ -1,0 +1,151 @@
+openapi: '3.0.0'
+info:
+  title: Movie API
+  description: this is a api to manage movies
+  version: '1.0'
+  contact:
+    email: bly.alvarado@gmail.com 
+servers:
+  - url: https://movie-api.server.dev/v1
+    description: It is a development server
+  - url: https://movie-api.server.dev/v1
+    description: It is a esting server
+tags:
+  - name: movie
+    description: Everything about movies.
+    externalDocs:
+      url: http://infomoviesPeru.com
+  - name: customer
+    description: People interested about movies.
+paths:
+  /movie:
+    get:
+      tags:
+        - movie
+      summary: Returns a list of movies.
+      parameters:
+        - name: alias
+          in: query
+          description: Common name movie
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/Serie'
+                  - $ref: '#/components/schemas/Musical'
+              
+    post:
+      tags:
+        - movie
+      summary: Register a new movie.
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: string
+                items:
+                  $ref: '#/components/schemas/Movie'
+
+  /movie/{movie-id}: 
+    get:
+      tags:
+        - movie
+      summary: Obtain detailed information about one movie
+      responses:
+        '200':
+          description: Successful operation
+    put:
+      tags:
+        - movie
+      summary: Update information of one movie with the movie-id
+      responses:
+        '200':
+          description: Successful operation
+
+components:
+  schemas:
+    Movie:
+      required:
+        - id
+        - title
+        - condition
+        - director
+        - movieType
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        title:
+          type: string
+          example: Titanic
+          minLength: 4
+          maxLength: 25
+        director:
+          type: string
+          example: Guillermo del Toro
+        condition:
+          type: string
+          enum:
+          - estreno
+          - general
+          - archivada
+          default: estreno
+          description: >
+           Condition of movie:
+            * `Estreno` - La pelicula esta en su semana de estreno.
+            * `General` - Paso de la semana de estreno.
+            * `Archivada` - Es una película muy antigua que solo se puede ver a petición formal por correo.
+        genero: 
+          type: string
+          enum:
+          - romance
+          - terror
+          - drama
+          - comedia 
+          example: drama
+          description: >
+           Trama de la pelicula:
+            * `Romance` - Peliculas de emociones y amor.
+            * `Comedia` - Suele tener temas entrelazados con amor y comedia.
+            * `Drama` - Trama con historias tristes o animadoras de la vida real.
+            * `Terror` - Peliculas que hacen temblar y generan pánico.
+        year:
+          type: string
+          description: Año que se estreno la pelicula.
+          example: 2010
+          deprecated: false
+        movieType:
+          type: string
+      discriminator:
+        propertyName: movieType
+        mapping:
+          Serie: '#/components/schemas/Serie'
+          Musical: '#/components/schemas/Musical'
+          
+    Serie:
+      allOf:
+        - $ref: '#/components/schemas/Movie'
+        - type: object
+        # todas las propiedades de Movie van a Serie
+          properties:
+            numberCaps:
+              type: integer
+              example: 12
+    Musical:
+      allOf:
+        - $ref: '#/components/schemas/Movie'
+        - type: object
+        # todas las propiedades de Movie van a Musical
+          properties:
+            singer:
+              type: string
+              example: Jonatan y Sara Jerez
